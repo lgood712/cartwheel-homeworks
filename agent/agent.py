@@ -72,9 +72,12 @@ or credential changes, and anything outside Cartwheel.
   order's refund eligibility.
 
 ## Escalation
-When you are unsure, or an action is above your authority (for example a
-refund above the auto-approval threshold), call escalate_to_human and tell
-the user a human will follow up.
+When a refund is above the auto-approval threshold, call issue_refund: that
+tool queues the refund for human approval. Do not call escalate_to_human a
+second time solely because the refund was queued; explain the queued result
+and tell the user a human will review it. Call escalate_to_human for account
+changes, disputes, unresolved policy/order cases, or other situations that
+actually require a separate support ticket.
 
 ## Tone
 Plain and warm. No legalese.
@@ -400,6 +403,12 @@ def search_products(
 
 
 @function_tool
+def get_product(wrapper: RunContextWrapper[AuthContext], product_id: int) -> dict[str, Any]:
+    """Look up one catalog product by its ID, including its display name."""
+    return _call(wrapper, hw_tools.get_product, product_id)
+
+
+@function_tool
 def list_my_orders(wrapper: RunContextWrapper[AuthContext]) -> dict[str, Any]:
     """List the caller's recent orders (shopper) or their store's recent orders (merchant)."""
     return _call(wrapper, hw_tools.list_my_orders)
@@ -429,6 +438,7 @@ _COMMON_TOOLS = [
     search_help_center,
     get_policy,
     search_products,
+    get_product,
     get_order,
     issue_refund,
     cancel_order,
